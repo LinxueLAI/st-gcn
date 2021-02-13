@@ -42,16 +42,16 @@ class Model(nn.Module):
         self.data_bn = nn.BatchNorm1d(in_channels * A.size(1))
         kwargs0 = {k: v for k, v in kwargs.items() if k != 'dropout'}
         self.st_gcn_networks = nn.ModuleList((
-            st_gcn(in_channels, 64, kernel_size, 1, residual=False, **kwargs0),
-            st_gcn(64, 64, kernel_size, 1, **kwargs),
-            st_gcn(64, 64, kernel_size, 1, **kwargs),
-            st_gcn(64, 64, kernel_size, 1, **kwargs),
-            st_gcn(64, 128, kernel_size, 2, **kwargs),
-            st_gcn(128, 128, kernel_size, 1, **kwargs),
-            st_gcn(128, 128, kernel_size, 1, **kwargs),
-            st_gcn(128, 256, kernel_size, 2, **kwargs),
-            st_gcn(256, 256, kernel_size, 1, **kwargs),
-            st_gcn(256, 256, kernel_size, 1, **kwargs),
+            st_gcn(in_channels, 32, kernel_size, 1, residual=False, **kwargs0),
+            st_gcn(32, 32, kernel_size, 1, **kwargs),
+            st_gcn(32, 32, kernel_size, 1, **kwargs),
+            st_gcn(32, 16, kernel_size, 1, **kwargs),
+            st_gcn(16, 16, kernel_size, 2, **kwargs),
+            #st_gcn(128, 128, kernel_size, 1, **kwargs),
+            #st_gcn(128, 128, kernel_size, 1, **kwargs),
+            #st_gcn(128, 256, kernel_size, 2, **kwargs),
+            #st_gcn(256, 256, kernel_size, 1, **kwargs),
+            #st_gcn(256, 256, kernel_size, 1, **kwargs),
         ))
 
         # initialize parameters for edge importance weighting
@@ -64,7 +64,7 @@ class Model(nn.Module):
             self.edge_importance = [1] * len(self.st_gcn_networks)
 
         # fcn for prediction
-        self.fcn = nn.Conv2d(256, num_class, kernel_size=1)
+        self.fcn = nn.Conv2d(16, num_class, kernel_size=1)
 
     def forward(self, x):
 
