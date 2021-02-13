@@ -1,0 +1,23 @@
+weights: ./models/epoch75_model.pt
+
+# feeder
+feeder: feeder.feeder.Feeder
+test_feeder_args:
+  data_path: ./data/Data_Lille/test_data.npy
+  label_path: ./data/Data_Lille/test_label.pkl
+
+# model
+model: net.st_gcn.Model
+model_args:
+  in_channels: 3
+  num_class: 5
+  dropout: 0.5
+  edge_importance_weighting: True
+  graph_args:
+    layout: "test"
+    strategy: "spatial"
+
+# test
+phase: test
+device: [0,1]
+test_batch_size: 16
