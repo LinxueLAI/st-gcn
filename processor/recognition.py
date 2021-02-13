@@ -71,10 +71,46 @@ class REC_Processor(Processor):
 
     def show_topk(self, k):
         rank = self.result.argsort()
+        #print("rank=")
+        #print(rank)
         hit_top_k = [l in rank[i, -k:] for i, l in enumerate(self.label)]
+        #print('hit_top-k')
+        #print(hit_top_k)
+
         accuracy = sum(hit_top_k) * 1.0 / len(hit_top_k)
         self.io.print_log('\tTop{}: {:.2f}%'.format(k, 100 * accuracy))
+################modified#########################
+    def show_top1(self, k):
+        rank = self.result.argsort()
+        #print("rank=")
+        #print(rank)
+        classes = [0,0,0,0,0]
+        hit_top_k = [0,0,0,0,0]
+        for i, l in enumerate(self.label):
+            if l == 0:
+                 classes[l] = classes[l]+1
+                 hit_top_k[l] = (l in rank[i, -k:])+hit_top_k[l]
+            if l == 1:
+                 classes[l] = classes[l]+1
+                 hit_top_k[l] = (l in rank[i, -k:])+hit_top_k[l]
+            if l == 2:
+                 classes[l] = classes[l]+1
+                 hit_top_k[l] = (l in rank[i, -k:])+hit_top_k[l]
+            if l == 3:
+                 classes[l] = classes[l]+1
+                 hit_top_k[l] = (l in rank[i, -k:])+hit_top_k[l]
+            if l == 4:
+                 hit_top_k[l] = (l in rank[i, -k:])+hit_top_k[l]
+                 classes[l] = classes[l]+1
+        print("classes=")
+        print(classes)
 
+        print('hit_top-k')
+        print(hit_top_k)
+        for l in range(5):
+            accuracy = hit_top_k[l] * 1.0 / classes[l]
+            self.io.print_log('\tclass {} : Top{}: {:.2f}%'.format(l+1, k, 100 * accuracy))
+################modified#########################
     def train(self):
         self.model.train()
         self.adjust_lr()
@@ -120,10 +156,13 @@ class REC_Processor(Processor):
             # get data
             data = data.float().to(self.dev)
             label = label.long().to(self.dev)
-
+            #print("label=")
+            #print(label)
             # inference
             with torch.no_grad():
                 output = self.model(data)
+                #print("output =")
+                #print(output)
             result_frag.append(output.data.cpu().numpy())
 
             # get loss
@@ -135,12 +174,14 @@ class REC_Processor(Processor):
         self.result = np.concatenate(result_frag)
         if evaluation:
             self.label = np.concatenate(label_frag)
+            #print('self.label')
+            #print(self.label)
             self.epoch_info['mean_loss']= np.mean(loss_value)
             self.show_epoch_info()
 
             # show top-k accuracy
             for k in self.arg.show_topk:
-                self.show_topk(k)
+                self.show_top1(k)
 
     @staticmethod
     def get_parser(add_help=False):
@@ -154,7 +195,7 @@ class REC_Processor(Processor):
 
         # region arguments yapf: disable
         # evaluation
-        parser.add_argument('--show_topk', type=int, default=[1, 5], nargs='+', help='which Top K accuracy will be shown')
+        parser.add_argument('--show_topk', type=int, default=[1, 2, 3], nargs='+', help='which Top K accuracy will be shown')
         # optim
         parser.add_argument('--base_lr', type=float, default=0.01, help='initial learning rate')
         parser.add_argument('--step', type=int, default=[], nargs='+', help='the epoch where optimizer reduce the learning rate')
